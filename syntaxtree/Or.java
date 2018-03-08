@@ -2,11 +2,11 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-// e1 && e2
-public class And extends Exp {
+// e1 || e2
+public class Or extends Exp {
   public Exp e1,e2;
   
-  public And(Exp ae1, Exp ae2) { 
+  public Or(Exp ae1, Exp ae2) { 
     e1=ae1; e2=ae2;
   }
 

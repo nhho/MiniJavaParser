@@ -2,11 +2,11 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-// e1 + e2
-public class Plus extends Exp {
+// e1 ^^ e2
+public class Exponent extends Exp {
   public Exp e1,e2;
   
-  public Plus(Exp ae1, Exp ae2) { 
+  public Exponent(Exp ae1, Exp ae2) { 
     e1=ae1; e2=ae2;
   }
 

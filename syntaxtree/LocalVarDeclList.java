@@ -2,19 +2,19 @@ package syntaxtree;
 
 import java.util.Vector;
 
-public class VarDeclList {
-   private Vector<VarDecl> list;
+public class LocalVarDeclList {
+   private Vector<LocalVarDecl> list;
 
-   public VarDeclList() {
-      list = new Vector<VarDecl>();
+   public LocalVarDeclList() {
+      list = new Vector<LocalVarDecl>();
    }
 
-   public void addElement(VarDecl n) {
+   public void addElement(LocalVarDecl n) {
       list.addElement(n);
    }
 
-   public VarDecl elementAt(int i)  { 
-      return (VarDecl)list.elementAt(i); 
+   public LocalVarDecl elementAt(int i)  { 
+      return (LocalVarDecl)list.elementAt(i); 
    }
 
    public int size() { 

@@ -2,12 +2,12 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class Assign extends Statement {
-  public Identifier i;
-  public Exp e;
+public class LocalVar extends ForInit {
+  public Type t;
+  public LocalVarDeclList v;
 
-  public Assign(Identifier ai, Exp ae) {
-    i=ai; e=ae; 
+  public LocalVar(Type at, LocalVarDeclList av) {
+    t=at; v=av; 
   }
 
   public void accept(Visitor v) {

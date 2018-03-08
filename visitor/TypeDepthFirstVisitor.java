@@ -61,6 +61,14 @@ public class TypeDepthFirstVisitor implements TypeVisitor {
     return null;
   }
 
+  // Identifier i;
+  // Exp e;
+  public Type visit(LocalVarDecl n) {
+    n.i.accept(this);
+    n.e.accept(this);
+    return null;
+  }
+
   // Type t;
   // Identifier i;
   // FormalList fl;
@@ -133,6 +141,20 @@ public class TypeDepthFirstVisitor implements TypeVisitor {
     return null;
   }
 
+  // ForInit f;
+  // Exp e;
+  // StmtExprList se;
+  // Statement s;
+  public Type visit(For n) {
+	n.f.accept(this);
+    n.e.accept(this);
+    for ( int i = 0; i < n.se.size(); i++ ) {
+        n.se.elementAt(i).accept(this);
+    }
+	n.s.accept(this);
+	return null;
+  }
+
   // Exp e;
   public Type visit(Print n) {
     n.e.accept(this);
@@ -146,6 +168,32 @@ public class TypeDepthFirstVisitor implements TypeVisitor {
     n.e.accept(this);
     return null;
   }
+  
+  // Identifier i;
+  // Exp e;
+  public Type visit(SimpleStmtExpr n) {
+    n.i.accept(this);
+    n.e.accept(this);
+    return null;
+  }
+  
+  // Type t;
+  // LocalVarDeclList v;
+  public Type visit(LocalVar n) {
+    n.t.accept(this);
+    for ( int i = 0; i < n.v.size(); i++ ) {
+        n.v.elementAt(i).accept(this);
+    }
+    return null;
+  }
+
+  // StmtExprList v;
+  public Type visit(StmtExprInit n) {
+    for ( int i = 0; i < n.se.size(); i++ ) {
+        n.se.elementAt(i).accept(this);
+    }
+    return null;
+  }
 
   // Identifier i;
   // Exp e1,e2;
@@ -156,8 +204,24 @@ public class TypeDepthFirstVisitor implements TypeVisitor {
     return null;
   }
 
+  // Identifier i;
+  // Exp e1,e2;
+  public Type visit(ArrayStmtExpr n) {
+    n.i.accept(this);
+    n.e1.accept(this);
+    n.e2.accept(this);
+    return null;
+  }
+
   // Exp e1,e2;
   public Type visit(And n) {
+    n.e1.accept(this);
+    n.e2.accept(this);
+    return null;
+  }
+
+  // Exp e1,e2;
+  public Type visit(Or n) {
     n.e1.accept(this);
     n.e2.accept(this);
     return null;
@@ -178,6 +242,13 @@ public class TypeDepthFirstVisitor implements TypeVisitor {
   }
 
   // Exp e1,e2;
+  public Type visit(Exponent n) {
+    n.e1.accept(this);
+    n.e2.accept(this);
+    return null;
+  }
+
+  // Exp e1,e2;
   public Type visit(Minus n) {
     n.e1.accept(this);
     n.e2.accept(this);
@@ -186,6 +257,13 @@ public class TypeDepthFirstVisitor implements TypeVisitor {
 
   // Exp e1,e2;
   public Type visit(Times n) {
+    n.e1.accept(this);
+    n.e2.accept(this);
+    return null;
+  }
+
+  // Exp e1,e2;
+  public Type visit(Divide n) {
     n.e1.accept(this);
     n.e2.accept(this);
     return null;
@@ -251,6 +329,12 @@ public class TypeDepthFirstVisitor implements TypeVisitor {
 
   // Exp e;
   public Type visit(Not n) {
+    n.e.accept(this);
+    return null;
+  }
+
+  // Exp e;
+  public Type visit(UnaryMinus n) {
     n.e.accept(this);
     return null;
   }

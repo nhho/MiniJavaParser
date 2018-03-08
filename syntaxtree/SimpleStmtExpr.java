@@ -2,11 +2,11 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class Assign extends Statement {
+public class SimpleStmtExpr extends StmtExpr {
   public Identifier i;
   public Exp e;
 
-  public Assign(Identifier ai, Exp ae) {
+  public SimpleStmtExpr(Identifier ai, Exp ae) {
     i=ai; e=ae; 
   }
 

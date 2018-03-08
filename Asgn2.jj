@@ -25,7 +25,7 @@ SPECIAL_TOKEN : /* COMMENTS */
 | <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
 }
 
-TOKEN : 
+TOKEN :
 {
   < LPAREN: "(" >
 | < RPAREN: ")" >
@@ -34,22 +34,28 @@ TOKEN :
 | < LBRACE: "{" >
 | < RBRACE: "}" >
 | < SEMICOLON: ";" >
+| < COMMA: "," >
 | < DOT: "." >
 | < ASSIGN: "=" >
 | < LT: "<" >
 | < PLUS: "+" >
 | < MINUS: "-" >
-| < AND : "&" >   
-| < NOT : "!" >   
-| < BOOLEAN: "boolean" >   
+| < TIME: "*" >
+| < DIVIDE: "/" >
+| < EXPONENT: "^^" >
+| < AND : "&&" >
+| < OR : "||" >
+| < NOT : "!" >
+| < BOOLEAN: "boolean" >
 | < CLASS: "class" >
+| < FOR: "for" >
 | < INTERFACE: "interface" >
 | < ELSE: "else" >
 | < EXTENDS: "extends" >
 | < FALSE: "false" >
 | < IF: "if" >
 | < WHILE: "while" >
-| < INTEGER: "int" >   
+| < INTEGER: "int" >
 | < LENGTH: "length" >
 | < MAIN: "main" >
 | < NEW: "new" >
@@ -60,12 +66,15 @@ TOKEN :
 | < THIS: "this" >
 | < TRUE: "true" >
 | < PRINT: "System.out.println" >
-| < VOID: "void" >         
+| < VOID: "void" >
 }
 
 TOKEN : /* LITERALS */
 {
-  < INTEGER_LITERAL: ( ["1"-"9"] (["0"-"9"])* | "0" ) >
+  < INTEGER_LITERAL: (<DECIMAL_INTEGER> | <OCTAL_INTEGER> | <HEXADECIMAL_INTEGER>)>
+| < #DECIMAL_INTEGER: ["1"-"9"] (["0"-"9"])* | "0">
+| < #OCTAL_INTEGER: "0" (["0"-"7"])+>
+| < #HEXADECIMAL_INTEGER: ("0x" | "0X") (["0"-"9", "A"-"F", "a"-"f"])+>
 }
 
 TOKEN : /* IDENTIFIERS */
@@ -118,12 +127,12 @@ TOKEN : /* IDENTIFIERS */
 
 
 Program Goal() :
-{ MainClass m; 
+{ MainClass m;
   ClassDeclList cl = new ClassDeclList();
   ClassDecl c;
 }
 {
-  m=MainClass() 
+  m=MainClass()
   ( c=ClassDeclaration() { cl.addElement(c); } )*
   <EOF>
   { return new Program(m,cl); }
@@ -134,16 +143,16 @@ MainClass MainClass() :
   Statement s; }
 {
   "class" i1=Identifier() "{"
-    "public" "static" "void" "main" "(" "String" "[" "]" i2=Identifier() ")"   
+    "public" "static" "void" "main" "(" "String" "[" "]" i2=Identifier() ")"
     "{" s=Statement() "}"
   "}"
   { return new MainClass(i1,i2,s); }
 }
 
-ClassDecl ClassDeclaration() :  
+ClassDecl ClassDeclaration() :
 { ClassDecl c; }
 {
-  ( 
+  (
   LOOKAHEAD(3)
   c=ClassDeclarationSimple()
 |
@@ -160,8 +169,8 @@ ClassDecl ClassDeclarationSimple() :
   MethodDeclList ml = new MethodDeclList();
 }
 {
-  "class" i=Identifier() "{" ( v=VarDeclaration()    { vl.addElement(v); } )* 
-                             ( m=MethodDeclaration() { ml.addElement(m); } )* 
+  "class" i=Identifier() "{" ( v=VarDeclaration()    { vl.addElement(v); } )*
+                             ( m=MethodDeclaration() { ml.addElement(m); } )*
                        "}"
   { return new ClassDeclSimple(i,vl,ml); }
 }
@@ -175,23 +184,23 @@ ClassDecl ClassDeclarationExtends() :
 }
 {
   "class" i1=Identifier() "extends" i2=Identifier()
-                       "{"   ( v=VarDeclaration()    { vl.addElement(v); } )* 
-                             ( m=MethodDeclaration() { ml.addElement(m); } )* 
+                       "{"   ( v=VarDeclaration()    { vl.addElement(v); } )*
+                             ( m=MethodDeclaration() { ml.addElement(m); } )*
                        "}"
   { return new ClassDeclExtends(i1,i2,vl,ml); }
 }
 
-VarDecl VarDeclaration() :  
+VarDecl VarDeclaration() :
 { Type t;
   Identifier i;
 }
-{ 
-  t=Type() i=Identifier() ";"      
+{
+  t=Type() i=Identifier() ";"
   { return new VarDecl(t,i); }
 }
 
-MethodDecl MethodDeclaration() :  
-{ 
+MethodDecl MethodDeclaration() :
+{
   Type t;
   Identifier i;
   FormalList fl = new FormalList();
@@ -199,40 +208,206 @@ MethodDecl MethodDeclaration() :
   VarDeclList vl = new VarDeclList();
   Statement s;
   StatementList sl = new StatementList();
-  Exp e; 
+  Exp e;
 }
 {
-  "public" t=Type() i=Identifier() 
-  "(" ( fl=FormalParameterList() )? ")"   
-  "{" ( LOOKAHEAD(2) v=VarDeclaration() { vl.addElement(v); } )* 
+  "public" t=Type() i=Identifier()
+  "(" fl=FormalParameterList() ")"
+  "{" ( LOOKAHEAD(2) v=VarDeclaration() { vl.addElement(v); } )*
       ( s=Statement() { sl.addElement(s); } )* "return" e=Expression() ";" "}"
   { return new MethodDecl(t,i,fl,vl,sl,e); }
 }
 
-FormalList FormalParameterList() :
-{ FormalList fl = new FormalList(); 
-  Formal f;
-}
-{
-  f=FormalParameter() { fl.addElement(f); }
-  ( f=FormalParameterRest() { fl.addElement(f); } )*
-  { return fl; }
-}
-
-Formal FormalParameter() :
-{ Type t; 
-  Identifier i;
-}
-{
-  t=Type() i=Identifier()
-  { return new Formal(t,i); }
-}
-
-Formal FormalParameterRest() :
-{ Formal f; }
-{
-  "," f=FormalParameter()
-  { return f; }
+JAVACODE /* tab */
+FormalList FormalParameterList() {
+  Token tok, last = new Token();
+  FormalList f = new FormalList();
+  int state = 0;  /* -1: skip all, 0: init, 1: comma, 2: non-empty list, 3: have type, 4: int, 5: int [ */
+  Type t = new IdentifierType("Dummy");
+  boolean missing_comma = false;
+  while (true) {
+    tok = getToken(1);
+    if (state == -1) {  /* skip all */
+      if (tok.kind == RPAREN || tok.kind == EOF) break;
+    } else if (state == 0) {  /* init */
+      if (tok.kind == RPAREN) break;
+      if (tok.kind == IDENTIFIER) {
+        t = new IdentifierType(tok.image);
+        last = tok;
+        state = 3;
+      } else if (tok.kind == INTEGER) {
+        last = tok;
+        state = 4;
+      }
+      else if (tok.kind == BOOLEAN) {
+        t = new BooleanType();
+        last = tok;
+        state = 3;
+      } else {
+        last = tok;
+        System.out.println("invalid formal parameter list at line " + last.beginLine + ", column " + last.beginColumn);
+        state = -1;
+      }
+    } else if (state == 1) {  /* comma */
+      if (tok.kind == RPAREN) {
+        System.out.println("invalid formal parameter list at line " + last.beginLine + ", column " + last.beginColumn);
+        break;
+      }
+      if (tok.kind == IDENTIFIER) {
+        t = new IdentifierType(tok.image);
+        state = 3;
+      } else if (tok.kind == INTEGER) state = 4;
+      else if (tok.kind == BOOLEAN) {
+        t = new BooleanType();
+        state = 3;
+      } else {
+        System.out.println("invalid formal parameter list at line " + last.beginLine + ", column " + last.beginColumn);
+        state = -1;
+      }
+    } else if (state == 2) {  /* non-empty list */
+      if (tok.kind == RPAREN) break;
+      if (tok.kind == COMMA) {
+        last = tok;
+        state = 1;
+      } else if (tok.kind == IDENTIFIER) {
+        t = new IdentifierType(tok.image);
+        last = tok;
+        missing_comma = true;
+        state = 3;
+      } else if (tok.kind == INTEGER) {
+        last = tok;
+        missing_comma = true;
+        state = 4;
+      } else if (tok.kind == BOOLEAN) {
+        t = new BooleanType();
+        last = tok;
+        missing_comma = true;
+        state = 3;
+      } else {
+        last = tok;
+        System.out.println("invalid formal parameter list at line " + last.beginLine + ", column " + last.beginColumn);
+        state = -1;
+      }
+    } else if (state == 3) {  /* have type */
+      if (tok.kind == RPAREN) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(t, new Identifier("dummy")));
+        last = tok;
+        System.out.println("identifier expected at line " + last.beginLine + ", column " + last.beginColumn);
+        break;
+      }
+      if (tok.kind == COMMA) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(t, new Identifier("dummy")));
+        last = tok;
+        System.out.println("identifier expected at line " + last.beginLine + ", column " + last.beginColumn);
+        state = 1;
+      } else if (tok.kind == IDENTIFIER) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(t, new Identifier(tok.image)));
+        state = 2;
+      } else if (tok.kind == INTEGER) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(t, new Identifier("dummy")));
+        last = tok;
+        System.out.println("identifier expected at line " + last.beginLine + ", column " + last.beginColumn);
+        missing_comma = true;
+        state = 4;
+      } else if (tok.kind == BOOLEAN) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(t, new Identifier("dummy")));
+        t = new BooleanType();
+        last = tok;
+        System.out.println("identifier expected at line " + last.beginLine + ", column " + last.beginColumn);
+        missing_comma = true;
+        state = 3;
+      } else {
+        System.out.println("invalid formal parameter list at line " + last.beginLine + ", column " + last.beginColumn);
+        state = -1;
+      }
+    } else if (state == 4) {  /* int */
+      if (tok.kind == RPAREN) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(new IntegerType(), new Identifier("dummy")));
+        last = tok;
+        System.out.println("identifier expected at line " + last.beginLine + ", column " + last.beginColumn);
+        break;
+      }
+      if (tok.kind == COMMA) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(new IntegerType(), new Identifier("dummy")));
+        last = tok;
+        System.out.println("identifier expected at line " + last.beginLine + ", column " + last.beginColumn);
+        state = 1;
+      } else if (tok.kind == IDENTIFIER) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(new IntegerType(), new Identifier(tok.image)));
+        state = 2;
+      } else if (tok.kind == INTEGER) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(new IntegerType(), new Identifier("dummy")));
+        last = tok;
+        System.out.println("identifier expected at line " + last.beginLine + ", column " + last.beginColumn);
+        missing_comma = true;
+        state = 4;
+      } else if (tok.kind == BOOLEAN) {
+        if (missing_comma) {
+          System.out.println(", expected at line " + last.beginLine + ", column " + last.beginColumn);
+          missing_comma = false;
+        }
+        f.addElement(new Formal(new IntegerType(), new Identifier("dummy")));
+        t = new BooleanType();
+        last = tok;
+        System.out.println("identifier expected at line " + last.beginLine + ", column " + last.beginColumn);
+        missing_comma = true;
+        state = 3;
+      } else if (tok.kind == LSQPAREN) state = 5;
+      else {
+        System.out.println("invalid formal parameter list at line " + last.beginLine + ", column " + last.beginColumn);
+        state = -1;
+      }
+    } else if (state == 5) {  /* int[ */
+      if (tok.kind == RPAREN) {
+        System.out.println("invalid formal parameter list at line " + last.beginLine + ", column " + last.beginColumn);
+        break;
+      } else if (tok.kind == RSQPAREN) {
+        t = new IntArrayType();
+        state = 3;
+      } else {
+        System.out.println("invalid formal parameter list at line " + last.beginLine + ", column " + last.beginColumn);
+        state = -1;
+      }
+    }
+    tok = getNextToken();
+  }
+  return f;
 }
 
 Type Type() :
@@ -246,7 +421,7 @@ Type Type() :
 |
   t=IntegerType()
 |
-  t=IdentifierType()     
+  t=IdentifierType()
   )
   { return t; }
 }
@@ -284,7 +459,7 @@ Statement Statement() :
 {
   (
   s=Block()
-| 
+|
   LOOKAHEAD(2)
   s=AssignmentStatement()
 |
@@ -295,15 +470,17 @@ Statement Statement() :
 |
   s=WhileStatement()
 |
+  s=ForStatement()
+|
   s=PrintStatement()
   )
   { return s; }
 }
 
 Statement Block() :
-{ 
+{
   Statement s;
-  StatementList sl = new StatementList(); 
+  StatementList sl = new StatementList();
 }
 {
   "{" ( s=Statement() { sl.addElement(s); } )* "}"
@@ -312,7 +489,7 @@ Statement Block() :
 
 Statement AssignmentStatement() :
 { Identifier i;
-  Exp e; 
+  Exp e;
 }
 {
   i=Identifier() "=" e=Expression() ";"
@@ -333,7 +510,7 @@ Statement IfStatement() :
   Statement s1,s2;
 }
 {
-  "if" "(" e=Expression() ")" s1=Statement() "else" s2=Statement() 
+  "if" "(" e=Expression() ")" s1=Statement() "else" s2=Statement()
   { return new If(e,s1,s2); }
 }
 
@@ -342,8 +519,70 @@ Statement WhileStatement() :
   Statement s;
 }
 {
-  "while" "(" e=Expression() ")" s=Statement() 
+  "while" "(" e=Expression() ")" s=Statement()
   { return new While(e,s); }
+}
+
+Statement ForStatement() :
+{ ForInit f;
+  Exp e;
+  StmtExprList se;
+  Statement s;
+}
+{
+  "for" "("
+  (
+  LOOKAHEAD(2)
+  f=LocalVariableDeclaration()
+|
+  se=StmtExprList()
+  { f = new StmtExprInit(se); }
+  )
+  ";" e=Expression() ";" se=StmtExprList() ")" s=Statement()
+  { return new For(f,e,se,s); }
+}
+
+LocalVar LocalVariableDeclaration() :
+{ Type t;
+  Identifier i;
+  Exp e;
+  LocalVarDeclList v = new LocalVarDeclList();;
+}
+{
+  t=Type() i=Identifier() "=" e=Expression()
+  { v.addElement(new LocalVarDecl(i,e)); }
+  (
+  "," i=Identifier() "=" e=Expression()
+  { v.addElement(new LocalVarDecl(i,e)); }
+  )*
+  { return new LocalVar(t, v); }
+}
+
+StmtExprList StmtExprList() :
+{ StmtExprList se = new StmtExprList();
+  Identifier i;
+  Exp e1, e2;
+}
+{
+  i=Identifier()
+  (
+  "=" e2=Expression()
+  { se.addElement(new SimpleStmtExpr(i, e2)); }
+|
+  "[" e1=Expression() "]" "=" e2=Expression()
+  { se.addElement(new ArrayStmtExpr(i, e1, e2)); }
+  )
+  (
+  "," i=Identifier()
+  (
+  "=" e2=Expression()
+  { se.addElement(new SimpleStmtExpr(i, e2)); }
+|
+  "[" e1=Expression() "]" "=" e2=Expression()
+  { se.addElement(new ArrayStmtExpr(i, e1, e2)); }
+  )
+  )*
+  { return se; }
 }
 
 Statement PrintStatement() :
@@ -354,203 +593,153 @@ Statement PrintStatement() :
 }
 
 Exp Expression() :
+{ Exp e1, e2; }
+{
+  e1=ExpressionG()
+  (
+  "||" e2=ExpressionG()
+  { e1 = new Or(e1,e2); }
+  )*
+  { return e1; }
+}
+
+Exp ExpressionG() :
+{ Exp e1, e2; }
+{
+  e1=ExpressionF()
+  (
+  "&&" e2=ExpressionF()
+  { e1 = new And(e1,e2); }
+  )*
+  { return e1; }
+}
+
+Exp ExpressionF() :
+{ Exp e1, e2; }
+{
+  e1=ExpressionE()
+  (
+  "<" e2=ExpressionE()
+  { e1 = new LessThan(e1,e2); }
+  )*
+  { return e1; }
+}
+
+
+Exp ExpressionE() :
+{ Exp e1, e2; }
+{
+  e1=ExpressionD()
+  (
+  "+" e2=ExpressionD()
+  { e1 = new Plus(e1,e2); }
+|
+  "-" e2=ExpressionD()
+  { e1 = new Minus(e1,e2); }
+  )*
+  { return e1; }
+}
+
+Exp ExpressionD() :
+{ Exp e1, e2; }
+{
+  e1=ExpressionC()
+  (
+  "*" e2=ExpressionC()
+  { e1 = new Times(e1,e2); }
+|
+  "/" e2=ExpressionC()
+  { e1 = new Divide(e1,e2); }
+  )*
+  { return e1; }
+}
+
+Exp ExpressionC() :
+{ Exp e1, e3; Exponent e2, e4; }
+{
+  e1=ExpressionB()
+  (
+  "^^" e3=ExpressionB()
+  { e2 = new Exponent(e1,e3); e1 = e2; }
+  (
+  "^^" e3=ExpressionB()
+  { e4 = new Exponent(e2.e2,e3); e2.e2 = e4; e2 = e4; }
+  )*
+  )?
+  { return e1; }
+}
+Exp ExpressionB() :
 { Exp e; }
 {
   (
-  LOOKAHEAD( PrimaryExpression() "&&" )
-  e=AndExpression()
+  "-" e=ExpressionB()
+  { e = new UnaryMinus(e); }
 |
-  LOOKAHEAD( PrimaryExpression() "<" )
-  e=CompareExpression()
+  "!" e=ExpressionB()
+  { e = new Not(e); }
 |
-  LOOKAHEAD( PrimaryExpression() "+" )
-  e=PlusExpression()
-|
-  LOOKAHEAD( PrimaryExpression() "-" )
-  e=MinusExpression()
-|
-  LOOKAHEAD( PrimaryExpression() "*" )
-  e=TimesExpression()
-|
-  LOOKAHEAD( PrimaryExpression() "[" )
-  e=ArrayLookup()
-|
-  LOOKAHEAD( PrimaryExpression() "." "length" )
-  e=ArrayLength()
-|
-  LOOKAHEAD( PrimaryExpression() "." Identifier() "(" )
-  e=MessageSend()
-| 
-  e=PrimaryExpression()
+  e=ExpressionA()
   )
   { return e; }
 }
 
-Exp AndExpression() :
-{ Exp e1,e2; } 
-{
-  e1=PrimaryExpression() "&&" e2=PrimaryExpression()
-  { return new And(e1,e2); }
-}
 
-Exp CompareExpression() :
-{ Exp e1,e2; } 
-{
-  e1=PrimaryExpression() "<" e2=PrimaryExpression()
-  { return new LessThan(e1,e2); }
-}
-
-Exp PlusExpression() :
-{ Exp e1,e2; } 
-{
-  e1=PrimaryExpression() "+" e2=PrimaryExpression()
-  { return new Plus(e1,e2); }
-}
-
-Exp MinusExpression() :
-{ Exp e1,e2; } 
-{
-  e1=PrimaryExpression() "-" e2=PrimaryExpression()
-  { return new Minus(e1,e2); }
-}
-
-Exp TimesExpression() :
-{ Exp e1,e2; } 
-{
-  e1=PrimaryExpression() "*" e2=PrimaryExpression()
-  { return new Times(e1,e2); }
-}
-
-Exp ArrayLookup() :
-{ Exp e1,e2; } 
-{
-  e1=PrimaryExpression() "[" e2=PrimaryExpression() "]"
-  { return new ArrayLookup(e1,e2); }
-}
-
-Exp ArrayLength() :
-{ Exp e; }
-{
-  e=PrimaryExpression() "." "length"
-  { return new ArrayLength(e); }
-}
-
-Exp MessageSend() :
-{ Exp e;
+Exp ExpressionA() :
+{ Exp e1, e2;
   Identifier i;
-  ExpList el = new ExpList(); 
-}
+  ExpList e3; }
 {
-  e=PrimaryExpression() "." i=Identifier() 
-  "(" ( el=ExpressionList() )? ")"
-  { return new Call(e,i,el); }
-}
-
-ExpList ExpressionList() :
-{ Exp e1,e2;
-  ExpList el = new ExpList();
-}
-{
-  e1=Expression() 
-  { el.addElement(e1); }
-  ( e2=ExpressionRest() { el.addElement(e2); })*
-  { return el; }
-}
-
-Exp ExpressionRest() :
-{ Exp e; }
-{
-  "," e=Expression()
-  { return e; }
+  e1=PrimaryExpression()
+  (
+  "[" e2=Expression() "]"
+  { e1 = new ArrayLookup(e1,e2);}
+|
+  LOOKAHEAD(2)
+  "." "length"
+  { e1 = new ArrayLength(e1); }
+|
+  "." i=Identifier() "("
+  { e3 = new ExpList(); }
+  (
+  e2=Expression() { e3.addElement(e2); }
+  ( "," e2=Expression() { e3.addElement(e2); })*
+  )? ")"
+  { e1 = new Call(e1,i,e3); }
+  )*
+  { return e1; }
 }
 
 Exp PrimaryExpression() :
-{ Exp e; }
+{ Exp e;
+  Token t;
+  Identifier i;
+}
 { 
   (
-  e=IntegerLiteral()
+  t=<INTEGER_LITERAL>
+  { e = new IntegerLiteral(Integer.decode(t.image)); }
 |
-  e=TrueLiteral()
+  "true"
+  { e = new True(); }
 |
-  e=FalseLiteral()
+  "false"
+  { e = new False(); }
 |
-  e=IdentifierExp()
+  t=<IDENTIFIER>
+  { e = new IdentifierExp(t.image); }
 |
-  e=ThisExpression()
+  "this"
+  { e = new This(); }
 |
   LOOKAHEAD(3)
-  e=ArrayAllocationExpression()
-|
-  e=AllocationExpression()
-|   
-  e=NotExpression()
-|   
-  e=BracketExpression()
-  )
-  { return e; }
-}
-
-Exp IntegerLiteral() :
-{ Token t; }
-{
-  t=<INTEGER_LITERAL>
-  { return new IntegerLiteral(Integer.parseInt(t.image)); }
-}
-
-
-Exp TrueLiteral() :
-{}
-{
-  "true"
-  { return new True(); }
-}
-
-Exp FalseLiteral() :
-{}
-{
-  "false"
-  { return new False(); }
-}
-
-Exp IdentifierExp() :
-{ Token t; }
-{
-  t=<IDENTIFIER>
-  { return new IdentifierExp(t.image); }
-}
-
-Exp ThisExpression() :
-{}
-{
-  "this"
-  { return new This(); }
-}
-
-Exp ArrayAllocationExpression() :
-{ Exp e; }
-{
   "new" "int" "[" e=Expression() "]"
-  { return new NewArray(e); }
-}
-
-Exp AllocationExpression() :
-{ Identifier i; }
-{
+  { e = new NewArray(e); }
+|
   "new" i=Identifier() "(" ")"
-  { return new NewObject(i); }
-}
-
-Exp NotExpression() :
-{ Exp e; }
-{
-  "!" e=Expression() 
-  { return new Not(e); }
-}
-
-Exp BracketExpression() :
-{ Exp e; }
-{
+  { e = new NewObject(i); }
+|   
   "(" e=Expression() ")"
+  )
   { return e; }
 }
 

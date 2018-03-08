@@ -8,6 +8,7 @@ public interface TypeVisitor {
   public Type visit(ClassDeclSimple n);
   public Type visit(ClassDeclExtends n);
   public Type visit(VarDecl n);
+  public Type visit(LocalVarDecl n);
   public Type visit(MethodDecl n);
   public Type visit(Formal n);
   public Type visit(IntArrayType n);
@@ -17,14 +18,22 @@ public interface TypeVisitor {
   public Type visit(Block n);
   public Type visit(If n);
   public Type visit(While n);
+  public Type visit(For n);
   public Type visit(Print n);
   public Type visit(Assign n);
+  public Type visit(SimpleStmtExpr n);
+  public Type visit(LocalVar n);
+  public Type visit(StmtExprInit n);
   public Type visit(ArrayAssign n);
+  public Type visit(ArrayStmtExpr n);
   public Type visit(And n);
+  public Type visit(Or n);
   public Type visit(LessThan n);
   public Type visit(Plus n);
+  public Type visit(Exponent n);
   public Type visit(Minus n);
   public Type visit(Times n);
+  public Type visit(Divide n);
   public Type visit(ArrayLookup n);
   public Type visit(ArrayLength n);
   public Type visit(Call n);
@@ -36,5 +45,6 @@ public interface TypeVisitor {
   public Type visit(NewArray n);
   public Type visit(NewObject n);
   public Type visit(Not n);
+  public Type visit(UnaryMinus n);
   public Type visit(Identifier n);
 }

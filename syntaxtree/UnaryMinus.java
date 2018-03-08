@@ -2,10 +2,10 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class Not extends Exp {
+public class UnaryMinus extends Exp {
   public Exp e;
   
-  public Not(Exp ae) {
+  public UnaryMinus(Exp ae) {
     e=ae; 
   }
 

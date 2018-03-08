@@ -2,10 +2,10 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class Times extends Exp {
+public class Divide extends Exp {
   public Exp e1,e2;
   
-  public Times(Exp ae1, Exp ae2) {
+  public Divide(Exp ae1, Exp ae2) {
     e1=ae1; e2=ae2;
   }
 

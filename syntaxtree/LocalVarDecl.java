@@ -2,12 +2,12 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class VarDecl {
-  public Type t;
+public class LocalVarDecl {
   public Identifier i;
+  public Exp e;
   
-  public VarDecl(Type at, Identifier ai) {
-    t=at; i=ai;
+  public LocalVarDecl(Identifier ai, Exp ae) {
+    i=ai; e=ae;
   }
 
   public void accept(Visitor v) {

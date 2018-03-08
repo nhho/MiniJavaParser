@@ -56,6 +56,13 @@ public class DepthFirstVisitor implements Visitor {
     n.i.accept(this);
   }
 
+  // Identifier i;
+  // Exp e;
+  public void visit(LocalVarDecl n) {
+    n.i.accept(this);
+    n.e.accept(this);
+  }
+
   // Type t;
   // Identifier i;
   // FormalList fl;
@@ -119,6 +126,19 @@ public class DepthFirstVisitor implements Visitor {
     n.s.accept(this);
   }
 
+  // ForInit f;
+  // Exp e;
+  // StmtExprList se;
+  // Statement s;
+  public void visit(For n) {
+	n.f.accept(this);
+    n.e.accept(this);
+    for ( int i = 0; i < n.se.size(); i++ ) {
+        n.se.elementAt(i).accept(this);
+    }
+	n.s.accept(this);
+  }
+
   // Exp e;
   public void visit(Print n) {
     n.e.accept(this);
@@ -130,6 +150,29 @@ public class DepthFirstVisitor implements Visitor {
     n.i.accept(this);
     n.e.accept(this);
   }
+  
+  // Identifier i;
+  // Exp e;
+  public void visit(SimpleStmtExpr n) {
+    n.i.accept(this);
+    n.e.accept(this);
+  }
+  
+  // Type t;
+  // LocalVarDeclList v;
+  public void visit(LocalVar n) {
+    n.t.accept(this);
+    for ( int i = 0; i < n.v.size(); i++ ) {
+        n.v.elementAt(i).accept(this);
+    }
+  }
+  
+  // StmtExprList se;
+  public void visit(StmtExprInit n) {
+    for ( int i = 0; i < n.se.size(); i++ ) {
+        n.se.elementAt(i).accept(this);
+    }
+  }
 
   // Identifier i;
   // Exp e1,e2;
@@ -139,8 +182,22 @@ public class DepthFirstVisitor implements Visitor {
     n.e2.accept(this);
   }
 
+  // Identifier i;
+  // Exp e1,e2;
+  public void visit(ArrayStmtExpr n) {
+    n.i.accept(this);
+    n.e1.accept(this);
+    n.e2.accept(this);
+  }
+
   // Exp e1,e2;
   public void visit(And n) {
+    n.e1.accept(this);
+    n.e2.accept(this);
+  }
+
+  // Exp e1,e2;
+  public void visit(Or n) {
     n.e1.accept(this);
     n.e2.accept(this);
   }
@@ -158,6 +215,12 @@ public class DepthFirstVisitor implements Visitor {
   }
 
   // Exp e1,e2;
+  public void visit(Exponent n) {
+    n.e1.accept(this);
+    n.e2.accept(this);
+  }
+
+  // Exp e1,e2;
   public void visit(Minus n) {
     n.e1.accept(this);
     n.e2.accept(this);
@@ -165,6 +228,12 @@ public class DepthFirstVisitor implements Visitor {
 
   // Exp e1,e2;
   public void visit(Times n) {
+    n.e1.accept(this);
+    n.e2.accept(this);
+  }
+
+  // Exp e1,e2;
+  public void visit(Divide n) {
     n.e1.accept(this);
     n.e2.accept(this);
   }
@@ -219,6 +288,11 @@ public class DepthFirstVisitor implements Visitor {
 
   // Exp e;
   public void visit(Not n) {
+    n.e.accept(this);
+  }
+
+  // Exp e;
+  public void visit(UnaryMinus n) {
     n.e.accept(this);
   }
 

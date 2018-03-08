@@ -2,12 +2,14 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class While extends Statement {
+public class For extends Statement {
+  public ForInit f;
   public Exp e;
+  public StmtExprList se;
   public Statement s;
 
-  public While(Exp ae, Statement as) {
-    e=ae; s=as; 
+  public For(ForInit af, Exp ae, StmtExprList ase, Statement as) {
+    f=af; e=ae; se=ase; s=as;
   }
 
   public void accept(Visitor v) {
