@@ -218,7 +218,7 @@ MethodDecl MethodDeclaration() :
   { return new MethodDecl(t,i,fl,vl,sl,e); }
 }
 
-JAVACODE /* tab */
+JAVACODE
 FormalList FormalParameterList() {
   Token tok, last = new Token();
   FormalList f = new FormalList();
