@@ -2,8 +2,9 @@ package visitor;
 
 import syntaxtree.*;
 
-public class Task2Visitor implements Visitor {
+public class Task3Visitor implements Visitor {
   int depth;
+  String mainClassName;
 
   // MainClass m;
   // ClassDeclList cl;
@@ -19,6 +20,7 @@ public class Task2Visitor implements Visitor {
   // Statement s;
   public void visit(MainClass n) {
     System.out.print("class ");
+	mainClassName = n.i1.s;
     n.i1.accept(this);
     System.out.println(" {");
     System.out.print("    public static void main(String[] ");
@@ -26,6 +28,15 @@ public class Task2Visitor implements Visitor {
     System.out.println(") {");
 	depth = 2;
     n.s.accept(this);
+    System.out.println("    }");
+    System.out.println("    public static int pow(int a, int b) {");
+    System.out.println("        int re = 1, i = 0;");
+    System.out.println("        while (i < b) ");
+    System.out.println("            {");
+    System.out.println("                re *= a;");
+    System.out.println("                i++;");
+    System.out.println("            }");
+    System.out.println("        return re;");
     System.out.println("    }");
     System.out.println("}");
   }
@@ -86,7 +97,7 @@ public class Task2Visitor implements Visitor {
   // Exp e;
   public void visit(LocalVarDecl n) {
     n.i.accept(this);
-    System.out.print("=");
+    System.out.print(" = ");
     n.e.accept(this);
   }
 
@@ -194,19 +205,30 @@ public class Task2Visitor implements Visitor {
   // Statement s;
   public void visit(For n) {
 	for (int i = 0; i < depth; i++) System.out.print("    ");
-    System.out.print("for (");
+	System.out.println("{");
+	depth++;
     n.f.accept(this);
-    System.out.print("; ");
+	for (int i = 0; i < depth; i++) System.out.print("    ");
+    System.out.print("while (");
     n.e.accept(this);
-    System.out.print("; ");
-    for ( int i = 0; i < n.se.size(); i++ ) {
-        n.se.elementAt(i).accept(this);
-		if (i+1 < n.se.size()) { System.out.print(", "); }
-    }
     System.out.println(")");
+	for (int i = 0; i < depth; i++) System.out.print("    ");
+	System.out.println("{");
+	depth++;
+	for (int i = 0; i < depth; i++) System.out.print("    ");
+	System.out.println("{");
 	depth++;
 	n.s.accept(this);
 	depth--;
+	for (int i = 0; i < depth; i++) System.out.print("    ");
+	System.out.println("}");
+    for ( int i = 0; i < n.se.size(); i++ ) n.se.elementAt(i).accept(this);
+	depth--;
+	for (int i = 0; i < depth; i++) System.out.print("    ");
+	System.out.println("}");
+	depth--;
+	for (int i = 0; i < depth; i++) System.out.print("    ");
+	System.out.println("}");
   }
 
   // Exp e;
@@ -230,28 +252,29 @@ public class Task2Visitor implements Visitor {
   // Type t;
   // LocalVarDeclList v;
   public void visit(LocalVar n) {
+	for (int i = 0; i < depth; i++) System.out.print("    ");
     n.t.accept(this);
     System.out.print(" ");
     for ( int i = 0; i < n.v.size(); i++ ) {
         n.v.elementAt(i).accept(this);
 		if (i+1 < n.v.size()) { System.out.print(", "); }
     }
+	System.out.println(";");
   }
   
   // StmtExprList v;
   public void visit(StmtExprInit n) {
-    for ( int i = 0; i < n.se.size(); i++ ) {
-        n.se.elementAt(i).accept(this);
-		if (i+1 < n.se.size()) { System.out.print(", "); }
-    }
+    for ( int i = 0; i < n.se.size(); i++ ) n.se.elementAt(i).accept(this);
   }
   
   // Identifier i;
   // Exp e;
   public void visit(SimpleStmtExpr n) {
+	for (int i = 0; i < depth; i++) System.out.print("    ");
     n.i.accept(this);
     System.out.print(" = ");
     n.e.accept(this);
+    System.out.println(";");
   }
 
   // Identifier i;
@@ -269,11 +292,13 @@ public class Task2Visitor implements Visitor {
   // Identifier i;
   // Exp e1,e2;
   public void visit(ArrayStmtExpr n) {
+	for (int i = 0; i < depth; i++) System.out.print("    ");
     n.i.accept(this);
     System.out.print("[");
     n.e1.accept(this);
     System.out.print("] = ");
     n.e2.accept(this);
+    System.out.println(";");
   }
 
   // Exp e1,e2;
@@ -314,9 +339,9 @@ public class Task2Visitor implements Visitor {
 
   // Exp e1,e2;
   public void visit(Exponent n) {
-    System.out.print("(");
+    System.out.print(mainClassName + ".pow(");
     n.e1.accept(this);
-    System.out.print(" ^^ ");
+    System.out.print(", ");
     n.e2.accept(this);
     System.out.print(")");
   }
