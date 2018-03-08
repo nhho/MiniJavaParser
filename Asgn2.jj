@@ -238,8 +238,7 @@ FormalList FormalParameterList() {
       } else if (tok.kind == INTEGER) {
         last = tok;
         state = 4;
-      }
-      else if (tok.kind == BOOLEAN) {
+      } else if (tok.kind == BOOLEAN) {
         t = new BooleanType();
         last = tok;
         state = 3;
@@ -668,6 +667,7 @@ Exp ExpressionC() :
   )?
   { return e1; }
 }
+
 Exp ExpressionB() :
 { Exp e; }
 {
@@ -692,7 +692,7 @@ Exp ExpressionA() :
   e1=PrimaryExpression()
   (
   "[" e2=Expression() "]"
-  { e1 = new ArrayLookup(e1,e2);}
+  { e1 = new ArrayLookup(e1,e2); }
 |
   LOOKAHEAD(2)
   "." "length"
@@ -702,7 +702,7 @@ Exp ExpressionA() :
   { e3 = new ExpList(); }
   (
   e2=Expression() { e3.addElement(e2); }
-  ( "," e2=Expression() { e3.addElement(e2); })*
+  ( "," e2=Expression() { e3.addElement(e2); } )*
   )? ")"
   { e1 = new Call(e1,i,e3); }
   )*
