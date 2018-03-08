@@ -86,7 +86,7 @@ public class Task2Visitor implements Visitor {
   // Exp e;
   public void visit(LocalVarDecl n) {
     n.i.accept(this);
-    System.out.print("=");
+    System.out.print(" = ");
     n.e.accept(this);
   }
 
